@@ -17,13 +17,14 @@
             background-color: #8fbcae;
             margin: 0;
             font-family: sans-serif;
-            overflow-x: hidden;
+            overflow: hidden; /* Mencegah layar bergeser (scroll) yang tidak perlu */
         }
 
         .container {
             perspective: 1000px;
         }
 
+        /* --- STRUKTUR AMPLOP --- */
         .envelope-wrapper {
             position: relative;
             width: 300px;
@@ -39,179 +40,90 @@
             transform: translateY(-5px) rotateX(5px);
         }
 
-        /* --- DESAIN SURAT (LETTER) --- */
+        /* --- DESAIN SURAT (YANG SUDAH DIPERBAIKI) --- */
         .letter {
             position: absolute;
-            bottom: 10px;
+            
+            /* Titik poros utama ada di tengah-tengah amplop */
+            top: 50%;
             left: 50%;
-            transform: translate(-50%, 0) scale(0.1); 
+            
+            /* Ukuran surat diatur responsif agar aman di layar sekecil apapun */
+            width: 90vw;
+            max-width: 360px;
+            height: 85vh;
+            max-height: 500px;
+            
+            /* POSISI AWAL: Mengecil dan digeser 80px ke bawah agar bersembunyi di dalam amplop */
+            transform: translate(-50%, 80px) scale(0.1); 
+            
             background-image: url('v619-peipei-42-planner.jpg'); 
             background-size: cover;
             background-position: center;
             background-color: #ffffff;
             border-radius: 8px;
-            width: 90%;
-            height: 100%;
+            
             opacity: 0;
-            z-index: 2; /* Surat berada di level 2 */
-            padding: 20px;
+            z-index: 2; /* Awalnya di belakang lipatan depan amplop */
+            
+            padding: 30px 20px;
             box-sizing: border-box;
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: 
-                transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                opacity 0.5s ease,
-                width 0.8s ease,
-                height 0.8s ease,
-                top 0.8s ease,
-                bottom 0.8s ease;
             overflow-y: auto;
+            
+            /* Animasi membesar dengan efek sedikit membal */
+            transition: 
+                transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.4s ease,
+                z-index 0s 0.2s; /* Z-index otomatis naik di pertengahan animasi */
         }
 
+        /* --- SAAT AMPLOP DIBUKA --- */
         .envelope-wrapper.open .letter {
             opacity: 1;
-            width: 350px;
-            height: 450px;
-            transform: translate(-50%, -30%) scale(1);
-            bottom: auto;
-            top: 0;
+            /* Surat melayang persis di tengah layar tanpa terpotong */
+            transform: translate(-50%, -50%) scale(1);
+            
+            /* KUNCI PERBAIKAN: Surat ditaruh di lapisan paling depan (menutupi amplop) */
+            z-index: 10; 
             box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-            padding: 30px 20px;
         }
 
-        .letter h2 {
-            margin: 0 0 15px 0;
-            color: #2c2c2c;
-            font-family: 'Dancing Script', cursive;
-            font-size: 2.8rem;
+        /* --- LIPATAN AMPLOP --- */
+        .flap {
+            position: absolute; top: 0; width: 0; height: 0;
+            border-left: 151px solid transparent; border-right: 151px solid transparent; border-top: 100px solid #c4b1a1;
+            z-index: 5; transform-origin: top; transition: transform 0.5s ease;
         }
 
-        .letter p {
-            margin: 0 0 20px 0;
-            color: #1a1a1a;
-            font-family: 'Courier Prime', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            font-weight: bold;
-        }
+        .envelope-wrapper.open .flap { transform: rotateX(180deg); z-index: 1; }
 
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: center;
-        }
+        .envelope-front { position: absolute; width: 100%; height: 100%; z-index: 4; }
+        .envelope-front::before { content: ''; position: absolute; border-top: 101px solid transparent; border-bottom: 101px solid transparent; border-left: 151px solid #e2d1c3; }
+        .envelope-front::after { content: ''; position: absolute; right: 0; border-top: 101px solid transparent; border-bottom: 101px solid transparent; border-right: 151px solid #e2d1c3; }
 
-        .btn {
-            display: inline-block;
-            width: 80%;
-            padding: 10px;
-            text-decoration: none;
-            border-radius: 25px;
-            font-family: 'Courier Prime', monospace;
-            font-weight: bold;
-            font-size: 0.85rem;
-            transition: transform 0.2s;
-        }
+        .envelope-bottom { position: absolute; bottom: 0; width: 0; height: 0; border-left: 151px solid transparent; border-right: 151px solid transparent; border-bottom: 101px solid #d8c5b5; z-index: 4; }
 
-        .btn-accept {
-            background-color: #25D366;
-            color: white;
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
-        }
+        /* --- TEKS DALAM SURAT --- */
+        .letter h2 { margin: 0 0 15px 0; color: #2c2c2c; font-family: 'Dancing Script', cursive; font-size: 2.6rem; }
+        .letter p { margin: 0 0 20px 0; color: #1a1a1a; font-family: 'Courier Prime', monospace; font-size: 0.9rem; line-height: 1.6; font-weight: bold; }
 
-        .btn-decline {
-            background-color: #f1f1f1;
-            color: #666;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
+        /* --- TOMBOL --- */
+        .button-group { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .btn { display: inline-block; width: 85%; padding: 10px; text-decoration: none; border-radius: 25px; font-family: 'Courier Prime', monospace; font-weight: bold; font-size: 0.85rem; transition: transform 0.2s; }
+        .btn-accept { background-color: #25D366; color: white; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); }
+        .btn-decline { background-color: #f1f1f1; color: #666; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
         .btn:hover { transform: scale(1.05); }
 
-        /* --- DESAIN AMPLOP (MODIFIKASI DI SINI) --- */
-        
-        /* Tutup atas (Flap) */
-        .flap {
-            position: absolute;
-            top: 0;
-            width: 0; height: 0;
-            border-left: 151px solid transparent;
-            border-right: 151px solid transparent;
-            border-top: 100px solid #c4b1a1;
-            z-index: 5; 
-            transform-origin: top;
-            transition: transform 0.5s ease, z-index 0.2s ease 0.2s;
-        }
+        .instruction { position: absolute; bottom: -40px; width: 100%; text-align: center; color: #4a6c61; font-weight: bold; transition: opacity 0.3s ease; }
+        .envelope-wrapper.open .instruction { opacity: 0; }
 
-        /* Lipatan Samping */
-        .envelope-front {
-            position: absolute; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 4; /* Level awal di depan surat */
-            transition: z-index 0.4s;
-        }
-        
-        .envelope-front::before {
-            content: ''; position: absolute;
-            border-top: 101px solid transparent; border-bottom: 101px solid transparent;
-            border-left: 151px solid #e2d1c3;
-        }
-        .envelope-front::after {
-            content: ''; position: absolute; right: 0;
-            border-top: 101px solid transparent; border-bottom: 101px solid transparent;
-            border-right: 151px solid #e2d1c3;
-        }
-
-        /* Lipatan Bawah */
-        .envelope-bottom {
-            position: absolute; 
-            bottom: 0; 
-            width: 0; 
-            height: 0;
-            border-left: 151px solid transparent;
-            border-right: 151px solid transparent;
-            border-bottom: 101px solid #d8c5b5; 
-            z-index: 4; /* Level awal di depan surat */
-            transition: z-index 0.4s;
-        }
-
-        /* PERUBAHAN KRUSIAL: Saat terbuka, pindahkan semua bagian ke belakang surat */
-        .envelope-wrapper.open .flap {
-            transform: rotateX(180deg);
-            z-index: 1;
-        }
-
-        .envelope-wrapper.open .envelope-front,
-        .envelope-wrapper.open .envelope-bottom {
-            z-index: 0; /* Pindah ke paling belakang (di bawah z-index surat yang bernilai 2) */
-        }
-
-        .instruction {
-            position: absolute;
-            bottom: -40px;
-            width: 100%;
-            text-align: center;
-            color: #4a6c61;
-            font-weight: bold;
-            font-size: 1rem;
-            transition: opacity 0.3s ease;
-        }
-
-        .envelope-wrapper.open .instruction {
-            opacity: 0;
-        }
-
+        /* --- KHUSUS HP --- */
         @media (max-width: 480px) {
-            .envelope-wrapper.open .letter {
-                width: 90vw;
-                height: 80vh;
-                transform-origin: center;
-                transform: translate(-50%, -50%) scale(1);
-                top: 50%;
-            }
             .letter h2 { font-size: 2.2rem; }
             .letter p { font-size: 0.8rem; }
+            .btn { font-size: 0.75rem; padding: 12px; }
         }
 
     </style>
@@ -220,17 +132,18 @@
 
     <div class="container">
         <div class="envelope-wrapper" id="envelope">
+            
             <div class="letter">
                 <h2>Selamat</h2>
                 <p>Halo!<br><br>Anda terpilih untuk dapat bergabung kedalam seksi HPPD PPM 2027.<br><br>Saya Jeisen selaku CO HPDD mengundang anda untuk bergabung.<br><br>Apakah anda bersedia?</p>
                 
                 <div class="button-group">
-                      <a href="https://wa.me/6289520354150?text=Halo,%20saya%20(nama)%20dengan%20HM%20(2..%200....)%20siap%20bergabung%20menjadi%20anggota%20HPDD%20PPM%202027!" target="_blank" class="btn btn-accept">
-                    Saya Bersedia
-                </a>
-                <a href="https://wa.me/6289520354150?text=Halo,%20saya%20(nama)%20dengan%20HM%20(2..%200....)%20belum%20siap%20bergabung%20menjadi%20anggota%20HPDD%20PPM%202027%20karena%20(alasan)!" target="_blank" class="btn btn-decline">
-                    Maaf, Berhalangan
-                </a>
+                    <a href="https://wa.me/6289520354150?text=Halo,%20saya%20(nama)%20dengan%20HM%20(2..%200....)%20siap%20bergabung%20menjadi%20anggota%20HPDD%20PPM%202027!" target="_blank" class="btn btn-accept">
+                        Saya Bersedia
+                    </a>
+                    <a href="https://wa.me/6289520354150?text=Halo,%20saya%20(nama)%20dengan%20HM%20(2..%200....)%20belum%20siap%20bergabung%20menjadi%20anggota%20HPDD%20PPM%202027%20karena%20(alasan)!" target="_blank" class="btn btn-decline">
+                        Maaf, Berhalangan
+                    </a>
                 </div>
             </div>
 
@@ -244,6 +157,7 @@
     <script>
         const envelope = document.getElementById('envelope');
         envelope.addEventListener('click', (e) => {
+            // Mencegah amplop tertutup lagi jika tombol diklik
             if (!e.target.closest('.btn')) {
                 envelope.classList.toggle('open');
             }
